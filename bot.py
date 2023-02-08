@@ -41,9 +41,7 @@ if not SAFETY_CHECKER:
 
 def image_to_bytes(image):
     bio = BytesIO()
-    size = (500, 100)
     crop_image = Image.open('/content/telegrambotv2/watermark.png')
-    crop_image.thumbnail(size)
     image.paste(crop_image, (10, 10))
     bio.name = 'image.jpeg'
     image.save(bio, 'JPEG')
@@ -56,7 +54,7 @@ def get_try_again_markup():
     return reply_markup
 
 
-def generate_image(prompt + ", dragonball z, anime, photorealistic painting art by greg rutkowski and makoto shinkai and Yoji Shinkawa, sharp edges, fine aura", seed=None, height=HEIGHT, width=WIDTH, num_inference_steps=NUM_INFERENCE_STEPS, strength=STRENTH, guidance_scale=GUIDANCE_SCALE, photo=None):
+def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_steps=NUM_INFERENCE_STEPS, strength=STRENTH, guidance_scale=GUIDANCE_SCALE, photo=None):
     seed = seed if seed is not None else random.randint(1, 10000)
     generator = torch.cuda.manual_seed_all(seed)
 
@@ -66,7 +64,7 @@ def generate_image(prompt + ", dragonball z, anime, photorealistic painting art 
         init_image = Image.open(BytesIO(photo)).convert("RGB")
         init_image = init_image.resize((height, width))
         with autocast("cuda"):
-            image = img2imgPipe(prompt=[prompt], init_image=init_image,
+            image = img2imgPipe(prompt=[prompt+ ", dragonball z, anime, photorealistic painting art by greg rutkowski and makoto shinkai and Yoji Shinkawa, sharp edges, fine aura"], init_image=init_image,
                                     generator=generator,
                                     strength=strength,
                                     guidance_scale=guidance_scale,
@@ -75,7 +73,7 @@ def generate_image(prompt + ", dragonball z, anime, photorealistic painting art 
         pipe.to("cuda")
         img2imgPipe.to("cpu")
         with autocast("cuda"):
-            image = pipe(prompt=[prompt],
+            image = pipe(prompt=[prompt + ", dragonball z, anime, photorealistic painting art by greg rutkowski and makoto shinkai and Yoji Shinkawa, sharp edges, fine aura"],
                                     generator=generator,
                                     strength=strength,
                                     height=height,
@@ -118,7 +116,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if replied_message.photo is not None and len(replied_message.photo) > 0 and replied_message.caption is not None:
             photo_file = await replied_message.photo[-1].get_file()
             photo = await photo_file.download_as_bytearray()
-            prompt = replied_message.caption
+            prompt = replied_message.caption 
             im, seed = generate_image(prompt, photo=photo)
 
             
