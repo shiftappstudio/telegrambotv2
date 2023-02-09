@@ -53,7 +53,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
         init_image = Image.open(BytesIO(photo)).convert("RGB")
         init_image = init_image.resize((height, width))
         with autocast("cuda"):
-            image = img2imgPipe(prompt=[prompt + ", aang as {{super sayian}}, masterpiece, fine aura,  {{dragon ball z}}"], negative_prompt=["bad hairs, poorly drawn hairs, fused hairs, bad face, fused face, poorly drawn face, cloned face, big face, long face, bad eyes, fused eyes poorly drawn eyes, extra eyes, bad mouth, fused mouth, poorly drawn mouth, bad tongue, big mouth,{ long body }, disfigured, ugly, gross proportions ,mutation, disfigured, deformed, {mutation}, poorly drawn, {wrong fingers}"],  init_image=init_image,
+            image = img2imgPipe(prompt=[prompt + ", aang as {{super sayian}}, masterpiece, fine aura,  {{dragon ball z}}"], negative_prompt=["bad hairs, poorly drawn hairs, fused hairs, bad face, fused face, poorly drawn face, cloned face, big face, long face, bad eyes, fused eyes , {poorly drawn eyes}, extra eyes, bad mouth, fused mouth, poorly drawn mouth, bad tongue, big mouth,{ asymmetric eyes }, disfigured, ugly, gross proportions ,mutation, disfigured, deformed, {mutation}, poorly drawn, {wrong fingers}"],  init_image=init_image,
                                     generator=generator,
                                     strength=strength,
                                     guidance_scale=guidance_scale,
