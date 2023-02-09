@@ -12,7 +12,7 @@ import random
 
 load_dotenv()
 TG_TOKEN = os.getenv('TG_TOKEN')
-MODEL_DATA = os.getenv('MODEL_DATA', 'Linaqruf/anything-v3.0')
+MODEL_DATA = os.getenv('MODEL_DATA', 'andite/anything-v4.0')
 LOW_VRAM_MODE = (os.getenv('LOW_VRAM', 'true').lower() == 'true')
 USE_AUTH_TOKEN = (os.getenv('USE_AUTH_TOKEN', 'true').lower() == 'true')
 SAFETY_CHECKER = (os.getenv('SAFETY_CHECKER', 'true').lower() == 'true')
@@ -26,11 +26,11 @@ torch_dtype = torch.float16 if LOW_VRAM_MODE else None
 
 # load the text2img pipeline
 pipe = StableDiffusionPipeline.from_pretrained(MODEL_DATA, torch_dtype=torch_dtype, use_auth_token=USE_AUTH_TOKEN)
-pipe = pipe.to("cpu")
+pipe = pipe.to("cuda")
 
 # load the img2img pipeline
 img2imgPipe = StableDiffusionImg2ImgPipeline.from_pretrained(MODEL_DATA, torch_dtype=torch_dtype, use_auth_token=USE_AUTH_TOKEN)
-img2imgPipe = img2imgPipe.to("cpu")
+img2imgPipe = img2imgPipe.to("cuda")
 
 # disable safety checker if wanted
 def dummy_checker(images, **kwargs): return images, False
@@ -59,27 +59,27 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
     generator = torch.cuda.manual_seed_all(seed)
 
     if photo is not None:
-        pipe.to("cpu")
+        pipe.to("cuda")
         img2imgPipe.to("cuda")
         init_image = Image.open(BytesIO(photo)).convert("RGB")
         init_image = init_image.resize((height, width))
         with autocast("cuda"):
-            image = img2imgPipe(prompt=[prompt+ ", dragonball z, anime, photorealistic painting art by greg rutkowski and makoto shinkai and Yoji Shinkawa, sharp edges, fine aura"], init_image=init_image,
+            image = img2imgPipe(prompt=[prompt], init_image=init_image,
                                     generator=generator,
                                     strength=strength,
                                     guidance_scale=guidance_scale,
-                                    num_inference_steps=num_inference_steps)["images"][0]
+                                    num_inference_steps=num_inference_steps).["images"][0]
     else:
         pipe.to("cuda")
-        img2imgPipe.to("cpu")
+        img2imgPipe.to("cuda")
         with autocast("cuda"):
-            image = pipe(prompt=[prompt + ", dragonball z, anime, photorealistic painting art by greg rutkowski and makoto shinkai and Yoji Shinkawa, sharp edges, fine aura"],
+            image = pipe(prompt=[prompt],
                                     generator=generator,
                                     strength=strength,
                                     height=height,
                                     width=width,
                                     guidance_scale=guidance_scale,
-                                    num_inference_steps=num_inference_steps)["images"][0]
+                                    num_inference_steps=num_inference_steps).["images"][0]
     return image, seed
 
 
