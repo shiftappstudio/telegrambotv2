@@ -8,6 +8,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 from io import BytesIO
 import random
+
 load_dotenv()
 TG_TOKEN = os.getenv('TG_TOKEN')
 MODEL_DATA = os.getenv('MODEL_DATA', 'Linaqruf/anything-v3.0')
@@ -31,47 +32,74 @@ def dummy_checker(images, **kwargs): return images, False
 if not SAFETY_CHECKER:
     pipe.safety_checker = dummy_checker
     img2imgPipe.safety_checker = dummy_checker
-
 def image_to_bytes(image):
     bio = BytesIO()
-    size = (500, 100)
     crop_image = Image.open('/content/telegrambotv2/watermark.png')
-    crop_image.thumbnail(size)
     image.paste(crop_image, (10, 10))
     bio.name = 'image.jpeg'
     image.save(bio, 'JPEG')
-	@@ -56,7 +54,7 @@ def get_try_again_markup():
+    bio.seek(0)
+    return bio
+def get_try_again_markup():
+    keyboard = [[InlineKeyboardButton("Try again", callback_data="TRYAGAIN"), InlineKeyboardButton("Variations", callback_data="VARIATIONS")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
-
-
-def generate_image(prompt + ", aang as {{super sayian}}, masterpiece, fine aura,  {{dragon ball z}}", negative_prompt="bad hairs, poorly drawn hairs, fused hairs, bad face, fused face, poorly drawn face, cloned face, big face, long face, bad eyes, fused eyes poorly drawn eyes, extra eyes, bad mouth, fused mouth, poorly drawn mouth, bad tongue, big mouth,{ long body }, disfigured, ugly, gross proportions ,mutation, disfigured, deformed, { mutation}, poorly drawn, {wrong fingers}", seed=None, height=HEIGHT, width=WIDTH, num_inference_steps=NUM_INFERENCE_STEPS, strength=STRENTH, guidance_scale=GUIDANCE_SCALE, photo=None):
+def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_steps=NUM_INFERENCE_STEPS, strength=STRENTH, guidance_scale=GUIDANCE_SCALE, photo=None):
     seed = seed if seed is not None else random.randint(1, 10000)
     generator = torch.cuda.manual_seed_all(seed)
-
-	@@ -66,7 +64,7 @@ def generate_image(prompt + ", dragonball z, anime, photorealistic painting art
+    if photo is not None:
+        pipe.to("cpu")
+        img2imgPipe.to("cuda")
         init_image = Image.open(BytesIO(photo)).convert("RGB")
         init_image = init_image.resize((height, width))
         with autocast("cuda"):
-            image = img2imgPipe(prompt=[prompt], init_image=init_image,
+            image = img2imgPipe(prompt=[prompt + ", aang as {{super sayian}}, masterpiece, fine aura,  {{dragon ball z}}"], negative_prompt="bad hairs, poorly drawn hairs, fused hairs, bad face, fused face, poorly drawn face, cloned face, big face, long face, bad eyes, fused eyes poorly drawn eyes, extra eyes, bad mouth, fused mouth, poorly drawn mouth, bad tongue, big mouth,{ long body }, disfigured, ugly, gross proportions ,mutation, disfigured, deformed, {mutation}, poorly drawn, {wrong fingers}",  init_image=init_image,
                                     generator=generator,
                                     strength=strength,
                                     guidance_scale=guidance_scale,
-	@@ -75,7 +73,7 @@ def generate_image(prompt + ", dragonball z, anime, photorealistic painting art
+                                    num_inference_steps=num_inference_steps)["images"][0]
+    else:
         pipe.to("cuda")
         img2imgPipe.to("cpu")
         with autocast("cuda"):
-            image = pipe(prompt=[prompt],
+            image = pipe(prompt=[prompt + ", aang as {{super sayian}}, masterpiece, fine aura,  {{dragon ball z}}"], negative_prompt="bad hairs, poorly drawn hairs, fused hairs, bad face, fused face, poorly drawn face, cloned face, big face, long face, bad eyes, fused eyes poorly drawn eyes, extra eyes, bad mouth, fused mouth, poorly drawn mouth, bad tongue, big mouth,{ long body }, disfigured, ugly, gross proportions ,mutation, disfigured, deformed, { mutation}, poorly drawn, {wrong fingers}",
                                     generator=generator,
                                     strength=strength,
                                     height=height,
-	@@ -118,7 +116,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+                                    width=width,
+                                    guidance_scale=guidance_scale,
+                                    num_inference_steps=num_inference_steps)["images"][0]
+    return image, seed
+async def generate_and_send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    progress_msg = await update.message.reply_text("Generating image...", reply_to_message_id=update.message.message_id)
+    im, seed = generate_image(prompt=update.message.text)
+    await context.bot.delete_message(chat_id=progress_msg.chat_id, message_id=progress_msg.message_id)
+    await context.bot.send_photo(update.effective_user.id, image_to_bytes(im), caption=f'"{update.message.text}" - Generated by {update.effective_user.id} BabyTestBoat.', reply_markup=get_try_again_markup(), reply_to_message_id=update.message.message_id)
+async def generate_and_send_photo_from_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message.caption is None:
+        await update.message.reply_text("The photo must contain a text in the caption", reply_to_message_id=update.message.message_id)
+        return
+    progress_msg = await update.message.reply_text("Generating image...", reply_to_message_id=update.message.message_id)
+    photo_file = await update.message.photo[-1].get_file()
+    photo = await photo_file.download_as_bytearray()
+    im, seed = generate_image(prompt=update.message.caption, photo=photo)
+    
+            
+    
+    await context.bot.delete_message(chat_id=progress_msg.chat_id, message_id=progress_msg.message_id)
+    await context.bot.send_photo(update.effective_user.id, image_to_bytes(im), caption=f'"{update.message.caption}" - Generated by DBZ.', reply_markup=get_try_again_markup(), reply_to_message_id=update.message.message_id)
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    replied_message = query.message.reply_to_message
+    await query.answer()
+    progress_msg = await query.message.reply_text("Generating image...", reply_to_message_id=replied_message.message_id)
+    if query.data == "TRYAGAIN":
         if replied_message.photo is not None and len(replied_message.photo) > 0 and replied_message.caption is not None:
             photo_file = await replied_message.photo[-1].get_file()
             photo = await photo_file.download_as_bytearray()
-            prompt = replied_message.caption
+            prompt = replied_message.caption 
             im, seed = generate_image(prompt, photo=photo)
-
-
+            
         else:
             prompt = replied_message.text
             im, seed = generate_image(prompt)
@@ -87,7 +115,7 @@ def generate_image(prompt + ", aang as {{super sayian}}, masterpiece, fine aura,
         
         
     await context.bot.delete_message(chat_id=progress_msg.chat_id, message_id=progress_msg.message_id)
-    await context.bot.send_photo(update.effective_user.id, image_to_bytes(im), caption=f'"{prompt}" -Generated by BabyTestBoat.)', reply_markup=get_try_again_markup(), reply_to_message_id=replied_message.message_id)
+    await context.bot.send_photo(update.effective_user.id, image_to_bytes(im), caption=f'"{prompt}" -Generated by DBZ.)', reply_markup=get_try_again_markup(), reply_to_message_id=replied_message.message_id)
 app = ApplicationBuilder().token(TG_TOKEN).build()
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, generate_and_send_photo))
 app.add_handler(MessageHandler(filters.PHOTO, generate_and_send_photo_from_photo))
