@@ -55,6 +55,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
                                     strength=strength,
                                     guidance_scale=guidance_scale,
                                     num_inference_steps=num_inference_steps).images[0]
+            image.save("./hatsune_miku.png")
     else:
         pipe.to("cuda")
         img2imgPipe.to("cpu")
