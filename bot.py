@@ -34,7 +34,7 @@ if not SAFETY_CHECKER:
     img2imgPipe.safety_checker = dummy_checker
 def image_to_bytes(image):
     bio = BytesIO()
-    crop_image = Image.open('/content/telegrambotv2/watermark.png')
+    crop_image = Image.open('/content/telegrambotv2/watermark.jpeg')
     image.paste(crop_image, (10, 10))
     bio.name = 'image.jpeg'
     image.save(bio, 'JPEG')
@@ -53,7 +53,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
         init_image = Image.open(BytesIO(photo)).convert("RGB")
         init_image = init_image.resize((height, width))
         with autocast("cuda"):
-            image = img2imgPipe(prompt=[prompt + ", {{super sayian}}, masterpiece, {{dragon ball z}}, fine aura, { yoji shinkawa }, serious"], negative_prompt=["bad hairs, poorly drawn hairs, fused hairs, bad face, fused face, poorly drawn face, cloned face, big face, long face, bad eyes, fused eyes , {poorly drawn eyes}, extra eyes, bad mouth, fused mouth, poorly drawn mouth, bad tongue, big mouth,{ asymmetric eyes }, disfigured, ugly, gross proportions ,mutation, disfigured, deformed, {androgyne}, poorly drawn, {wrong fingers}"],  init_image=init_image,
+            image = img2imgPipe(prompt=[prompt], negative_prompt=["bad hairs, poorly drawn hairs, fused hairs, bad face, fused face, poorly drawn face, cloned face, big face, long face, bad eyes, fused eyes , {poorly drawn eyes}, extra eyes, bad mouth, fused mouth, poorly drawn mouth, bad tongue, big mouth,{ asymmetric eyes }, disfigured, ugly, gross proportions ,mutation, disfigured, deformed, {androgyne}, poorly drawn, {wrong fingers}"],  init_image=init_image,
                                     generator=generator,
                                     strength=strength,
                                     guidance_scale=guidance_scale,
@@ -62,7 +62,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
         pipe.to("cuda")
         img2imgPipe.to("cpu")
         with autocast("cuda"):
-            image = pipe(prompt=[prompt + ", Aang as {{super sayian}}, masterpiece, {{dragon ball z}}, fine aura,{ yoji shinkawa }, serious"], negative_prompt=["bad hairs, { asymmetric eyes }, poorly drawn hairs, fused hairs, bad face, fused face, poorly drawn face, cloned face, big face, long face, {bad eyes}, fused eyes poorly drawn eyes, extra eyes, bad mouth, fused mouth, poorly drawn mouth, bad tongue, big mouth, disfigured, ugly, gross proportions ,mutation,{androgyne}, disfigured, deformed, poorly drawn, {wrong fingers}"],
+            image = pipe(prompt=[prompt], negative_prompt=["bad hairs, { asymmetric eyes }, poorly drawn hairs, fused hairs, bad face, fused face, poorly drawn face, cloned face, big face, long face, {bad eyes}, fused eyes poorly drawn eyes, extra eyes, bad mouth, fused mouth, poorly drawn mouth, bad tongue, big mouth, disfigured, ugly, gross proportions ,mutation,{androgyne}, disfigured, deformed, poorly drawn, {wrong fingers}"],
                                     generator=generator,
                                     strength=strength,
                                     height=height,
