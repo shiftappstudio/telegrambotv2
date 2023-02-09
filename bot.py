@@ -68,7 +68,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
                                     generator=generator,
                                     strength=strength,
                                     guidance_scale=guidance_scale,
-                                    num_inference_steps=num_inference_steps).["images"][0]
+                                    num_inference_steps=num_inference_steps)["images"][0]
     else:
         pipe.to("cuda")
         img2imgPipe.to("cuda")
@@ -79,7 +79,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
                                     height=height,
                                     width=width,
                                     guidance_scale=guidance_scale,
-                                    num_inference_steps=num_inference_steps).["images"][0]
+                                    num_inference_steps=num_inference_steps)["images"][0]
     return image, seed
 
 
