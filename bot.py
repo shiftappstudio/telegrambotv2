@@ -12,7 +12,7 @@ import random
 
 load_dotenv()
 TG_TOKEN = os.getenv('TG_TOKEN')
-MODEL_DATA = os.getenv('MODEL_DATA', 'andite/anything-v4.0')
+MODEL_DATA = os.getenv('MODEL_DATA', 'StupidGame/AnythingV4.5')
 LOW_VRAM_MODE = (os.getenv('LOW_VRAM', 'true').lower() == 'true')
 USE_AUTH_TOKEN = (os.getenv('USE_AUTH_TOKEN', 'true').lower() == 'true')
 SAFETY_CHECKER = (os.getenv('SAFETY_CHECKER', 'true').lower() == 'true')
@@ -26,11 +26,11 @@ torch_dtype = torch.float16 if LOW_VRAM_MODE else None
 
 # load the text2img pipeline
 pipe = StableDiffusionPipeline.from_pretrained(MODEL_DATA, torch_dtype=torch_dtype, use_auth_token=USE_AUTH_TOKEN)
-pipe = pipe.to("cuda")
+pipe = pipe.to("cpu")
 
 # load the img2img pipeline
 img2imgPipe = StableDiffusionImg2ImgPipeline.from_pretrained(MODEL_DATA, torch_dtype=torch_dtype, use_auth_token=USE_AUTH_TOKEN)
-img2imgPipe = img2imgPipe.to("cuda")
+img2imgPipe = img2imgPipe.to("cpu")
 
 # disable safety checker if wanted
 def dummy_checker(images, **kwargs): return images, False
@@ -59,7 +59,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
     generator = torch.cuda.manual_seed_all(seed)
 
     if photo is not None:
-        pipe.to("cuda")
+        pipe.to("cpu")
         img2imgPipe.to("cuda")
         init_image = Image.open(BytesIO(photo)).convert("RGB")
         init_image = init_image.resize((height, width))
@@ -71,7 +71,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
                                     num_inference_steps=num_inference_steps)["images"][0]
     else:
         pipe.to("cuda")
-        img2imgPipe.to("cuda")
+        img2imgPipe.to("cpu")
         with autocast("cuda"):
             image = pipe(prompt=[prompt],
                                     generator=generator,
