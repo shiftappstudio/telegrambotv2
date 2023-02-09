@@ -27,10 +27,7 @@ pipe = pipe.to("cpu")
 # load the img2img pipeline
 img2imgPipe = StableDiffusionImg2ImgPipeline.from_pretrained(MODEL_DATA, torch_dtype=torch_dtype, use_auth_token=USE_AUTH_TOKEN)
 img2imgPipe = img2imgPipe.to("cpu")
-# disable safety checker if wanted
-def dummy_checker(images, **kwargs): return images, False
-    
-    
+        
     
 def image_to_bytes(image):
     bio = BytesIO()
