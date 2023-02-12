@@ -55,7 +55,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
         init_image = Image.open(BytesIO(photo)).convert("RGB")
         init_image = init_image.resize((height, width))
         with autocast("cuda"):
-            image = img2imgPipe(prompt=[prompt.replace("/animai",'')], negative_prompt=["poorly drawn, {wrong fingers}"],  init_image=init_image,
+            image = img2imgPipe(prompt=[prompt.replace("/mya",'')], negative_prompt=["poorly drawn, {wrong fingers}"],  init_image=init_image,
                                     generator=generator,
                                     strength=strength,
                                     guidance_scale=guidance_scale,
@@ -64,7 +64,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
         pipe.to("cuda")
         img2imgPipe.to("cpu")
         with autocast("cuda"):
-            image = pipe(prompt=[prompt], negative_prompt=["poorly drawn, {wrong fingers}"],
+            image = pipe(prompt=[prompt.replace("/mya",'')], negative_prompt=["poorly drawn, {wrong fingers}"],
                                     generator=generator,
                                     strength=strength,
                                     height=height,
@@ -74,7 +74,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
     return image, seed
 async def generate_and_send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     progress_msg = await update.message.reply_text("Generating image...", reply_to_message_id=update.message.message_id)
-    im, seed = generate_image(prompt=update.message.text.replace("/animai",''))
+    im, seed = generate_image(prompt=update.message.text.replace("/mya",''))
     await context.bot.delete_message(chat_id=progress_msg.chat_id, message_id=progress_msg.message_id)
     print(update.effective_user)
     print(update.message) 
