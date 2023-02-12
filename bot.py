@@ -55,7 +55,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
         init_image = Image.open(BytesIO(photo)).convert("RGB")
         init_image = init_image.resize((height, width))
         with autocast("cuda"):
-            image = img2imgPipe(prompt=[prompt.replace("/animai",'')], negative_prompt=["bad hairs, disappearing legs, malformed feet, bad feet, poorly drawn, {wrong fingers}"],  init_image=init_image,
+            image = img2imgPipe(prompt=[prompt.replace("/animai",'')], negative_prompt=["poorly drawn, {wrong fingers}"],  init_image=init_image,
                                     generator=generator,
                                     strength=strength,
                                     guidance_scale=guidance_scale,
@@ -64,7 +64,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
         pipe.to("cuda")
         img2imgPipe.to("cpu")
         with autocast("cuda"):
-            image = pipe(prompt=[prompt], negative_prompt=["bad hairs, disappearing legs, malformed feet, bad feet, poorly drawn, {wrong fingers}"],
+            image = pipe(prompt=[prompt], negative_prompt=["poorly drawn, {wrong fingers}"],
                                     generator=generator,
                                     strength=strength,
                                     height=height,
