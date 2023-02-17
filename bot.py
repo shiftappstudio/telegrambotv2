@@ -17,9 +17,9 @@ USE_AUTH_TOKEN = (os.getenv('USE_AUTH_TOKEN', 'true').lower() == 'true')
 SAFETY_CHECKER = (os.getenv('SAFETY_CHECKER', 'true').lower() == 'true')
 HEIGHT = int(os.getenv('HEIGHT', '512'))
 WIDTH = int(os.getenv('WIDTH', '512'))
-NUM_INFERENCE_STEPS = int(os.getenv('NUM_INFERENCE_STEPS', '50'))
+NUM_INFERENCE_STEPS = int(os.getenv('NUM_INFERENCE_STEPS', '70'))
 STRENTH = float(os.getenv('STRENTH', '0.75'))
-GUIDANCE_SCALE = float(os.getenv('GUIDANCE_SCALE', '7.5'))
+GUIDANCE_SCALE = float(os.getenv('GUIDANCE_SCALE', '7'))
 torch_dtype = torch.float16 if LOW_VRAM_MODE else None
 # load the text2img pipeline
 pipe = StableDiffusionPipeline.from_pretrained(MODEL_DATA, torch_dtype=torch_dtype, use_auth_token=USE_AUTH_TOKEN)
@@ -55,7 +55,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
         init_image = Image.open(BytesIO(photo)).convert("RGB")
         init_image = init_image.resize((height, width))
         with autocast("cuda"):
-            image = img2imgPipe(prompt=[prompt.replace("/mya",'')], negative_prompt=["poorly drawn, {wrong fingers}"],  init_image=init_image,
+            image = img2imgPipe(prompt=[prompt.replace("/mya",'') + ", {{masterpiece}}"], negative_prompt=["mutation"],  init_image=init_image,
                                     generator=generator,
                                     strength=strength,
                                     guidance_scale=guidance_scale,
@@ -64,7 +64,7 @@ def generate_image(prompt, seed=None, height=HEIGHT, width=WIDTH, num_inference_
         pipe.to("cuda")
         img2imgPipe.to("cpu")
         with autocast("cuda"):
-            image = pipe(prompt=[prompt.replace("/mya",'')], negative_prompt=["poorly drawn, {wrong fingers}"],
+            image = pipe(prompt=[prompt.replace("/mya",'')+ ", {{masterpiece}}"], negative_prompt=["mutation"],
                                     generator=generator,
                                     strength=strength,
                                     height=height,
