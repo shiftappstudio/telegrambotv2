@@ -15,7 +15,7 @@ from firebase_admin import firestore
 from datetime import datetime, date
 
 # Use a service account.
-cred = credentials.Certificate('/content/telegrambot/my-anime-ai-ee95b-firebase-adminsdk-dhmtm-a0c58a38cb.json')
+cred = credentials.Certificate('/content/telegrambotv2/firestore-37b0a-firebase-adminsdk-6jr4p-172e02d893.json')
 
 app = firebase_admin.initialize_app(cred)
 
