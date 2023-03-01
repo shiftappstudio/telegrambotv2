@@ -15,7 +15,7 @@ from firebase_admin import firestore
 from datetime import datetime, date
 
 # Use a service account.
-cred = credentials.Certificate('/content/telegrambotv2/firestore-37b0a-firebase-adminsdk-6jr4p-172e02d893.json')
+cred = credentials.Certificate('/content/telegrambotv2/my-anime-ai-ee95b-firebase-adminsdk-dhmtm-a0c58a38cb.json')
 
 app = firebase_admin.initialize_app(cred)
 
@@ -47,7 +47,7 @@ if not SAFETY_CHECKER:
 def image_to_bytes(image):
     bio = BytesIO()
     size = (125, 450)
-    crop_image = Image.open('/content/telegrambot/watermark.png')
+    crop_image = Image.open('/content/telegrambotv2/watermark.png')
     crop_image.thumbnail(size)
     image.paste(crop_image, (0, 0))
     bio.name = 'image.jpeg'
